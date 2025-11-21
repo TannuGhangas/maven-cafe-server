@@ -10,12 +10,21 @@ const User = require.main.require('./models/User'); // Use main.require for bett
 const Order = require.main.require('./models/Order'); // Use main.require for better module resolution
 
 const app = express();
-const PORT = process.env.SERVER_PORT || 3001;
+const PORT = process.env.PORT || process.env.SERVER_PORT || 3001;
 // NOTE: Make sure your .env has DB_URI defined (e.g., mongodb://localhost:27017/mavencafe)
 const DB_URI = process.env.DB_URI;
 
 // --- 2. CONFIGURATION & MIDDLEWARE ---
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+    "https://maven-cafe-frontend.vercel.app" // Vercel frontend
+    ],
+    methods: "GET,POST,PUT,DELETE",
+    allowedHeaders: "Content-Type,Authorization"
+  })
+);
 app.use(express.json());
 
 // --- 3. DATABASE CONNECTION & SEEDING ---
