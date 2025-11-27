@@ -1,4 +1,4 @@
-// server.js - FINAL PRODUCTION VERSION WITH ALL LOGIC & FIXES
+// server.js
 
 // --- 1. SETUP & DEPENDENCIES ---
 const express = require('express');
@@ -6,61 +6,31 @@ const cors = require('cors');
 const winston = require('winston');
 require('dotenv').config(); 
 const mongoose = require('mongoose');
-const User = require.main.require('./models/User'); // Use main.require for better module resolution
-const Order = require.main.require('./models/Order'); // Use main.require for better module resolution
+const User = require.main.require('./models/User'); 
+const Order = require.main.require('./models/Order'); 
+const Feedback = require.main.require('./models/Feedback'); 
 
 const app = express();
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3001;
-// NOTE: Make sure your .env has DB_URI defined (e.g., mongodb://localhost:27017/mavencafe)
 const DB_URI = process.env.DB_URI;
 
 // --- 2. CONFIGURATION & MIDDLEWARE ---
 app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-    "https://maven-cafe-frontend.vercel.app" // Vercel frontend
-    ],
-    methods: "GET,POST,PUT,DELETE",
-    allowedHeaders: "Content-Type,Authorization"
-  })
-);
-app.use(express.json());
-
-// --- 3. DATABASE CONNECTION & SEEDING ---
-mongoose.connect(DB_URI)
-    .then(() => {
-        console.log('✅ MongoDB Connected successfully.');
-        seedDatabase(); 
+    cors({
+        origin: [
+            "http://localhost:5173", 
+            "http://10.119.41.34:5173", 
+            "https://maven-cafe-frontend.vercel.app" 
+        ],
+        methods: "GET,POST,PUT,DELETE",
+        allowedHeaders: "Content-Type,Authorization"
     })
-    .catch(err => {
-        console.error('❌ MongoDB Connection Error:', err.message);
-        process.exit(1);
-    });
+);
+// CRITICAL: Express body parser must be here before routes
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true })); // Added for robustness, though JSON is used for this app
 
-// --- Database Seeding Function (Guaranteed to run once on an empty collection) ---
-async function seedDatabase() {
-    try {
-        const adminExists = await User.findOne({ username: 'admin' });
-        if (!adminExists) {
-            let currentUserId = 101; 
-            
-            await User.insertMany([
-                // NOTE: 'email' field is omitted, relying on the 'sparse: true' fix in User.js
-                { id: currentUserId++, username: 'admin', password: 'adminpassword', name: 'Super Admin', role: 'admin', enabled: true },
-                { id: currentUserId++, username: 'kitchen', password: 'kitchenpassword', name: 'Kitchen Manager', role: 'kitchen', enabled: true },
-                { id: currentUserId++, username: 'ravi', password: 'userpassword', name: 'Ravi Sharma', role: 'user', enabled: true },
-                { id: currentUserId++, username: 'puneet', password: 'puneetpassword', name: 'Puneet Singh', role: 'user', enabled: true },
-            ]);
-            console.log('🌱 Initial users inserted (Admin, Kitchen, Users).');
-        }
-    } catch (error) {
-        // This catch block handles the E11000 duplicate key error if the index wasn't dropped manually
-        logger.error('Database Seeding Failed (E11000 likely): Please ensure your DB is empty and restart.', error);
-    }
-}
-
-// --- 4. LOGGING (Winston) ---
+// --- 3. LOGGING (Winston) ---
 const logger = winston.createLogger({
     level: 'info',
     format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
@@ -74,33 +44,69 @@ app.use((req, res, next) => {
     next();
 });
 
+// --- 4. DATABASE CONNECTION & SEEDING ---
+mongoose.connect(DB_URI)
+    .then(() => {
+        console.log('✅ MongoDB Connected successfully.');
+        seedDatabase(); 
+    })
+    .catch(err => {
+        console.error('❌ MongoDB Connection Error:', err.message);
+        process.exit(1);
+    });
+
+async function seedDatabase() {
+    try {
+        const adminExists = await User.findOne({ username: 'admin' });
+        if (!adminExists) {
+            let currentUserId = 101; 
+            
+            await User.insertMany([
+                { id: currentUserId++, username: 'admin', password: 'adminpassword', name: 'Super Admin', role: 'admin', enabled: true },
+                { id: currentUserId++, username: 'kitchen', password: 'kitchenpassword', name: 'Kitchen Manager', role: 'kitchen', enabled: true },
+                { id: currentUserId++, username: 'ravi', password: 'userpassword', name: 'Ravi Sharma', role: 'user', enabled: true },
+                { id: currentUserId++, username: 'Tannu', password: '123', name: 'Tannu', role: 'user', enabled: true },
+            ]);
+            console.log('🌱 Initial users inserted (Admin, Kitchen, Users).');
+        }
+    } catch (error) {
+        logger.error('Database Seeding Failed (E11000 likely): Please ensure your DB is empty and restart.', error);
+    }
+}
+
 // --- 5. AUTHORIZATION MIDDLEWARE ---
 
 const authorize = (allowedRoles) => async (req, res, next) => {
-    let userId, userRole;
+    let userId; 
+    let clientRole; 
 
     // Extract authorization data
     if (req.method === 'GET') {
         userId = parseInt(req.query.userId); 
-        userRole = req.query.userRole; 
+        clientRole = req.query.userRole; 
     } else {
+        // For POST/PUT/DELETE, check req.body (parsed by express.json())
         userId = req.body.userId;
-        userRole = req.body.userRole;
+        clientRole = req.body.userRole; 
     }
     
-    if (!userId || !userRole) {
-        return res.status(401).json({ success: false, message: 'Authentication required: User ID or Role missing in request.' });
+    // Improved Check: Handle missing authentication data
+    if (!userId || !clientRole) {
+        let missingField = !userId ? 'User ID' : 'User Role';
+        return res.status(401).json({ success: false, message: `Authentication required: ${missingField} missing in request body/query.` });
     }
+    // Ensure userId is treated as a number
+    userId = parseInt(userId);
 
     try {
         const user = await User.findOne({ id: userId }); 
 
         if (!user) {
-            return res.status(403).json({ success: false, message: 'Access denied: User not found.' });
+            return res.status(403).json({ success: false, message: 'Access denied: User not found in database.' });
         }
         
-        if (user.role !== userRole) {
-            return res.status(403).json({ success: false, message: 'Access denied: Role mismatch.' });
+        if (user.role !== clientRole) {
+            return res.status(403).json({ success: false, message: 'Access denied: Role mismatch with server data.' });
         }
 
         if (!user.enabled) {
@@ -119,6 +125,7 @@ const authorize = (allowedRoles) => async (req, res, next) => {
     }
 };
 
+
 // --- 6. API ENDPOINTS ---
 
 /**
@@ -131,7 +138,6 @@ app.post('/api/login', async (req, res) => {
     }
 
     try {
-        // In a real app, you'd hash and compare passwords here.
         const user = await User.findOne({ username, password }); 
 
         if (user && user.enabled) {
@@ -160,7 +166,6 @@ app.post('/api/login', async (req, res) => {
 app.post('/api/orders', authorize(['user', 'admin']), async (req, res) => {
     const { userId, userName, slot, items } = req.body;
 
-    // Basic validation based on schema
     if (!userId || !userName || !slot || !items || items.length === 0 || !['morning (9:00-12:00)', 'afternoon (1:00 - 5:30)'].includes(slot)) {
         return res.status(400).json({ success: false, message: 'Incomplete or invalid order data.' });
     }
@@ -184,14 +189,89 @@ app.post('/api/orders', authorize(['user', 'admin']), async (req, res) => {
 });
 
 /**
+ * Endpoint 14: POST /api/feedback (User: Submit Feedback/Complaint)
+ */
+app.post('/api/feedback', authorize(['user', 'admin', 'kitchen']), async (req, res) => {
+    const { userId, userName, type, details, location, orderReference, status } = req.body;
+
+    // The authorize middleware already verified userId and role.
+    if (!userName || !type || !details || !location) { 
+        return res.status(400).json({ success: false, message: 'Incomplete or invalid feedback data. Location is required.' });
+    }
+
+    try {
+        const newFeedback = await Feedback.create({
+            userId,
+            userName,
+            type,
+            details,
+            location: location || 'N/A', 
+            orderReference: orderReference || 'N/A', 
+            status: status || 'New', 
+            timestamp: new Date()
+        });
+
+        logger.info(`New Feedback submitted: ${newFeedback._id} by ${userName} (Type: ${type})`);
+        res.status(201).json({ success: true, message: 'Feedback submitted successfully.', feedback: newFeedback.toObject() });
+    } catch (error) {
+        logger.error('Feedback Submission Error:', error);
+        return res.status(500).json({ success: false, message: 'Server error during feedback submission.' });
+    }
+});
+
+// --- FEEDBACK ROUTES FOR KITCHEN/ADMIN ---
+
+/**
+ * Endpoint 15: GET /api/feedback (Kitchen/Admin: Fetch All Complaints)
+ */
+app.get('/api/feedback', authorize(['admin', 'kitchen']), async (req, res) => { 
+    try {
+        const complaints = await Feedback.find().sort({ timestamp: -1 });
+        res.json(complaints);
+    } catch (err) {
+        logger.error('Fetch All Complaints Error:', err);
+        res.status(500).json({ success: false, message: 'Server error fetching feedback' });
+    }
+});
+
+/**
+ * Endpoint 16: PUT /api/feedback/:id (Kitchen/Admin: Update Complaint Status)
+ */
+app.put('/api/feedback/:id', authorize(['admin', 'kitchen']), async (req, res) => { 
+    const feedbackId = req.params.id;
+    const { status } = req.body; 
+
+    if (!['New', 'In Progress', 'Resolved'].includes(status)) {
+        return res.status(400).json({ success: false, message: 'Invalid status provided.' });
+    }
+
+    try {
+        const updatedFeedback = await Feedback.findByIdAndUpdate(
+            feedbackId,
+            { status: status },
+            { new: true }
+        );
+
+        if (!updatedFeedback) {
+            return res.status(404).json({ success: false, message: 'Feedback not found.' });
+        }
+        
+        logger.info(`Feedback ${feedbackId} status updated to: ${status} by ${req.currentUser.name}`);
+        res.json({ success: true, message: `Feedback status updated to ${status}.`, feedback: updatedFeedback });
+    } catch (err) {
+        logger.error('Update Complaint Status Error:', err);
+        res.status(500).json({ success: false, message: 'Server error updating status' });
+    }
+});
+
+
+/**
  * Endpoint 3: GET /api/orders/:userId (User: View Own Orders)
  */
-app.get('/api/orders/:userId', async (req, res) => {
+app.get('/api/orders/:userId', authorize(['user']), async (req, res) => {
     const userId = parseInt(req.params.userId);
     
-    // We allow fetching without full authorization here since the FE will pass the ID
     try {
-        // Fetch only orders that are NOT delivered
         const userOrders = await Order.find({ userId, status: { $ne: 'Delivered' } }).sort({ timestamp: -1 });
         res.json(userOrders);
     } catch (error) {
@@ -208,7 +288,6 @@ app.put('/api/orders/:orderId', authorize(['user']), async (req, res) => {
     const { userId, items, action } = req.body;
 
     if (action === 'delete') {
-        // User wants to cancel the entire order
         try {
             const result = await Order.findOneAndDelete({ _id: orderId, userId: userId, status: { $in: ['Placed', 'Making'] } });
             if (!result) return res.status(404).json({ success: false, message: 'Order not found or cannot be cancelled at this stage.' });
@@ -221,7 +300,6 @@ app.put('/api/orders/:orderId', authorize(['user']), async (req, res) => {
         }
     }
     
-    // User wants to edit the items
     if (!items || items.length === 0) {
         return res.status(400).json({ success: false, message: 'Items list is empty for update.' });
     }
@@ -244,11 +322,10 @@ app.put('/api/orders/:orderId', authorize(['user']), async (req, res) => {
 });
 
 
-// --- KITCHEN/ADMIN ROUTES ---
+// --- KITCHEN/ADMIN ROUTES (Orders) ---
 
 /**
  * Endpoint 4: GET /api/orders (Kitchen/Admin: View All Active Orders)
- * Active Orders = Status is Placed, Making, or Ready (not Delivered)
  */
 app.get('/api/orders', authorize(['admin', 'kitchen']), async (req, res) => {
     try {
@@ -311,7 +388,6 @@ app.get('/api/users', authorize(['admin']), async (req, res) => {
  * Endpoint 7: POST /api/users (Admin: Add New User)
  */
 app.post('/api/users', authorize(['admin']), async (req, res) => {
-    // Include email field for completeness, though Admin UI might omit it
     const { username, password, name, role, enabled, email } = req.body; 
     
     if (!username || !password || !name || !role || !['user', 'kitchen', 'admin'].includes(role)) {
@@ -319,11 +395,10 @@ app.post('/api/users', authorize(['admin']), async (req, res) => {
     }
     
     try {
-        // **FIX: Explicitly check for username/email duplicates BEFORE Mongoose insertion**
         const existingUser = await User.findOne({ 
             $or: [
                 { username }, 
-                ...(email ? [{ email }] : []) // Only check email if it's provided
+                ...(email ? [{ email }] : []) 
             ]
         });
 
@@ -337,17 +412,15 @@ app.post('/api/users', authorize(['admin']), async (req, res) => {
             return res.status(409).json({ success: false, message });
         }
         
-        // --- ROBUST ID CALCULATION ---
         const lastUser = await User.findOne().sort({ id: -1 }).limit(1); 
         const newId = lastUser ? lastUser.id + 1 : 101; 
-        // -----------------------------
         
         const newUser = await User.create({
             id: newId, 
             username,
             password,
             name,
-            email: email || undefined, // Store undefined if empty
+            email: email || undefined, 
             role,
             enabled: enabled !== undefined ? enabled : true
         });
@@ -358,7 +431,6 @@ app.post('/api/users', authorize(['admin']), async (req, res) => {
     } catch (error) {
         logger.error('Create User Error - Database detail:', error); 
         
-        // Catch E11000 index violation as a fallback
         if (error.code === 11000) {
             return res.status(409).json({ success: false, message: 'A duplicate value was found. Please check username or email (DB Index Error).' });
         }
@@ -470,7 +542,6 @@ app.put('/api/user/:userId', authorize(['user', 'kitchen', 'admin']), async (req
     if (password) updateData.password = password; 
 
     try {
-        // **FIX: Explicitly check for duplicate email during update**
         if (email) {
             const existingEmailUser = await User.findOne({ email, id: { $ne: userId } });
             if (existingEmailUser) {
@@ -478,7 +549,6 @@ app.put('/api/user/:userId', authorize(['user', 'kitchen', 'admin']), async (req
             }
             updateData.email = email;
         } else {
-            // Allow user to clear their email by setting it to null/undefined
             updateData.email = undefined;
         }
 
@@ -494,7 +564,6 @@ app.put('/api/user/:userId', authorize(['user', 'kitchen', 'admin']), async (req
         res.json({ success: true, message: 'Profile updated successfully.', user: updatedUser.toObject() });
     } catch (error) {
         logger.error('Update Profile Error:', error);
-        // Fallback catch for unique email violation
         if (error.code === 11000) {
             return res.status(409).json({ success: false, message: 'Email already in use by another account (DB Index Error).' });
         }

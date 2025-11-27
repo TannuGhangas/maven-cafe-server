@@ -3,9 +3,20 @@
 const mongoose = require('mongoose');
 
 const OrderItemSchema = new mongoose.Schema({
-    item: { type: String, required: true, enum: ['coffee', 'tea', 'milk', 'water'] },
+    // 1. UPDATED: Expanded the item enum to match frontend configuration logic (including Maggie, Shikanji, Jaljeera)
+    item: { 
+        type: String, 
+        required: true, 
+        enum: ['coffee', 'tea', 'milk', 'water', 'shikanji', 'jaljeera', 'maggie'] 
+    },
     type: { type: String, required: false }, // e.g., 'Black Coffee', 'Masala Tea', 'Hot Milk'
-    sugarLevel: { type: Number, required: false }, // 0, 1, 2, 3
+    
+    // 2. UPDATED: Changed from Number to String to accommodate both numeric values ('0', '1', '2') and 'None'.
+    sugarLevel: { type: String, required: false }, 
+    
+    // 3. NEW FIELD: Added to store selected spice/add-ons from the config page.
+    selectedAddOns: { type: [String], required: false, default: [] }, // e.g., ['Ginger', 'Cardamom']
+    
     quantity: { type: Number, required: true, default: 1 },
     location: { type: String, required: true }, // General location (e.g., 'Sharma Sir Cabin')
     tableNo: { type: Number, required: false }, // 1-25 if needed
