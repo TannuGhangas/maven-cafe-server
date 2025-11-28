@@ -6,9 +6,11 @@ const cors = require('cors');
 const winston = require('winston');
 require('dotenv').config(); 
 const mongoose = require('mongoose');
-const User = require.main.require('./models/User'); 
-const Order = require.main.require('./models/Order'); 
-const Feedback = require.main.require('./models/Feedback'); 
+const User = require.main.require('./models/User');
+const Order = require.main.require('./models/Order');
+const Feedback = require.main.require('./models/Feedback');
+const Menu = require.main.require('./models/Menu');
+const Location = require.main.require('./models/Location');
 
 const app = express();
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3001;
@@ -59,15 +61,148 @@ async function seedDatabase() {
     try {
         const adminExists = await User.findOne({ username: 'admin' });
         if (!adminExists) {
-            let currentUserId = 101; 
-            
+            let currentUserId = 101;
+
             await User.insertMany([
                 { id: currentUserId++, username: 'admin', password: 'adminpassword', name: 'Super Admin', role: 'admin', enabled: true },
                 { id: currentUserId++, username: 'kitchen', password: 'kitchenpassword', name: 'Kitchen Manager', role: 'kitchen', enabled: true },
-                { id: currentUserId++, username: 'ravi', password: 'userpassword', name: 'Ravi Sharma', role: 'user', enabled: true },
-                { id: currentUserId++, username: 'Tannu', password: '123', name: 'Tannu', role: 'user', enabled: true },
+                { id: currentUserId++, username: 'Tannu', password: '123', name: 'Tannu', role: 'admin', enabled: true },
             ]);
             console.log('🌱 Initial users inserted (Admin, Kitchen, Users).');
+
+            // Seed default menu
+            const defaultMenu = {
+                categories: [
+                    { name: 'Coffee', icon: 'FaCoffee', items: ["Black", "Milk", "Simple", "Cold"], color: '#8B4513' },
+                    { name: 'Tea', icon: 'FaMugHot', items: ["Black", "Milk", "Green"], color: '#228B22' },
+                    { name: 'Milk', icon: 'FaGlassWhiskey', items: ["Hot", "Cold"], color: '#F5F5DC' },
+                    { name: 'Water', icon: 'FaTint', items: ["Warm", "Cold", "Hot", "Lemon"], color: '#87CEEB' },
+                    { name: 'Shikanji', icon: 'FaLemon', items: ['Shikanji'], color: '#FFD700' },
+                    { name: 'Jaljeera', icon: 'FaCube', items: ['Jaljeera'], color: '#8B0000' },
+                    { name: 'Soup', icon: 'FaUtensilSpoon', items: ['Soup'], color: '#FFA500' },
+                    { name: 'Maggie', icon: 'FaUtensilSpoon', items: ['Maggie'], color: '#FF6347' },
+                    { name: 'Oats', icon: 'FaUtensilSpoon', items: ['Oats'], color: '#D2691E' },
+                ],
+                addOns: ["Ginger", "Cloves", "Fennel Seeds", "Cardamom", "Cinnamon"],
+                sugarLevels: [0, 1, 2, 3],
+                itemImages: {
+                    tea: 'https://tmdone-cdn.s3.me-south-1.amazonaws.com/store-covers/133003776906429295.jpg',
+                    coffee: 'https://i.pinimg.com/474x/7a/29/df/7a29dfc903d98c6ba13b687ef1fa1d1a.jpg',
+                    milk: 'https://www.shutterstock.com/image-photo/almond-milk-cup-glass-on-600nw-2571172141.jpg',
+                    water: 'https://images.stockcake.com/public/d/f/f/dffca756-1b7f-4366-8b89-4ad6f9bbf88a_large/chilled-water-glass-stockcake.jpg',
+                    shikanji: 'https://i.pinimg.com/736x/1f/fd/08/1ffd086ffef72a98f234162a312cfe39.jpg',
+                    jaljeera: 'https://www.shutterstock.com/image-photo/indian-summer-drink-jaljeera-jaljira-260nw-1110952079.jpg',
+                    soup: 'https://www.inspiredtaste.net/wp-content/uploads/2018/10/Homemade-Vegetable-Soup-Recipe-2-1200.jpg',
+                    maggie: 'https://i.pinimg.com/736x/5c/6d/9f/5c6d9fe78de73a7698948e011d6745f1.jpg',
+                    oats: 'https://images.moneycontrol.com/static-mcnews/2024/08/20240827041559_oats.jpg?impolicy=website&width=1600&height=900',
+                }
+            };
+            await Menu.create(defaultMenu);
+            console.log('🍽️ Default menu inserted.');
+
+            // Seed default locations
+            const defaultLocations = [
+                { id: 1, name: 'Ajay', location: 'Seat_7', access: 'Confrence' },
+                { id: 2, name: 'Tannu', location: 'Seat_8', access: 'Own seat' },
+                { id: 3, name: 'Lovekush', location: 'Seat_6', access: 'Own seat' },
+                { id: 4, name: 'Ansh', location: 'Seat_5', access: 'Own seat' },
+                { id: 5, name: 'Vanshika', location: 'Seat_4', access: 'Own seat' },
+                { id: 6, name: 'Sonu', location: 'Seat_3', access: 'Confrence' },
+                { id: 7, name: 'Khushi', location: 'Seat_15', access: 'Confrence' },
+                { id: 8, name: 'Sneha', location: 'Reception', access: 'Own seat' },
+                { id: 9, name: 'Muskan', location: 'Seat_11', access: 'Own seat' },
+                { id: 10, name: 'Nikita', location: 'Seat_16', access: 'Own seat' },
+                { id: 11, name: 'Saloni', location: 'Seat_14', access: 'Own seat' },
+                { id: 12, name: 'Babita', location: 'Reception', access: 'Own seat' },
+                { id: 13, name: 'Monu', location: 'Seat_1', access: 'Own seat' },
+                { id: 14, name: 'Sourabh', location: 'Seat_2', access: 'Own seat' },
+                { id: 15, name: 'Gurmeet', location: 'Maven_Area', access: 'Confrence' },
+                { id: 16, name: 'Sneha Lathwal', location: 'Maven_Area', access: 'Own seat' },
+                { id: 17, name: 'Vanshika Jagga', location: 'Maven_Area', access: 'Own seat' },
+                { id: 18, name: 'Nisha', location: 'Reception', access: 'Pod room/Confrence' },
+                { id: 19, name: 'Suhana', location: 'Seat_10', access: 'All' },
+                { id: 20, name: 'Ketan', location: 'Ketan_Cabin', access: 'All' },
+                { id: 21, name: 'Bhavishya', location: 'Bhavishya_Cabin', access: 'All' },
+                { id: 22, name: 'Satish', location: 'Seat_12', access: 'Own seat' },
+                { id: 23, name: 'Sahil', location: 'Seat_20', access: 'Own seat/Confrence' },
+                { id: 24, name: 'Diwakar', location: 'Diwakar_Sir_Cabin', access: 'All' },
+                { id: 25, name: 'Sharma Sir', location: 'Sharma_Sir_Office', access: 'All' },
+                { id: 26, name: 'Ritesh Sir', location: 'Ritesh_Sir_Cabin', access: 'All' },
+            ];
+            await Location.insertMany(defaultLocations);
+            console.log('📍 Default locations inserted.');
+        } else {
+            // Ensure Tannu is admin
+            await User.updateOne({ username: 'Tannu' }, { role: 'admin', enabled: true });
+            console.log('🔄 Tannu role updated to admin.');
+        }
+
+        // Seed menu if not exists
+        const menuExists = await Menu.findOne();
+        if (!menuExists) {
+            const defaultMenu = {
+                categories: [
+                    { name: 'Coffee', icon: 'FaCoffee', items: ["Black", "Milk", "Simple", "Cold"], color: '#8B4513' },
+                    { name: 'Tea', icon: 'FaMugHot', items: ["Black", "Milk", "Green"], color: '#228B22' },
+                    { name: 'Milk', icon: 'FaGlassWhiskey', items: ["Hot", "Cold"], color: '#F5F5DC' },
+                    { name: 'Water', icon: 'FaTint', items: ["Warm", "Cold", "Hot", "Lemon"], color: '#87CEEB' },
+                    { name: 'Shikanji', icon: 'FaLemon', items: ['Shikanji'], color: '#FFD700' },
+                    { name: 'Jaljeera', icon: 'FaCube', items: ['Jaljeera'], color: '#8B0000' },
+                    { name: 'Soup', icon: 'FaUtensilSpoon', items: ['Soup'], color: '#FFA500' },
+                    { name: 'Maggie', icon: 'FaUtensilSpoon', items: ['Maggie'], color: '#FF6347' },
+                    { name: 'Oats', icon: 'FaUtensilSpoon', items: ['Oats'], color: '#D2691E' },
+                ],
+                addOns: ["Ginger", "Cloves", "Fennel Seeds", "Cardamom", "Cinnamon"],
+                sugarLevels: [0, 1, 2, 3],
+                itemImages: {
+                    tea: 'https://tmdone-cdn.s3.me-south-1.amazonaws.com/store-covers/133003776906429295.jpg',
+                    coffee: 'https://i.pinimg.com/474x/7a/29/df/7a29dfc903d98c6ba13b687ef1fa1d1a.jpg',
+                    milk: 'https://www.shutterstock.com/image-photo/almond-milk-cup-glass-on-600nw-2571172141.jpg',
+                    water: 'https://images.stockcake.com/public/d/f/f/dffca756-1b7f-4366-8b89-4ad6f9bbf88a_large/chilled-water-glass-stockcake.jpg',
+                    shikanji: 'https://i.pinimg.com/736x/1f/fd/08/1ffd086ffef72a98f234162a312cfe39.jpg',
+                    jaljeera: 'https://www.shutterstock.com/image-photo/indian-summer-drink-jaljeera-jaljira-260nw-1110952079.jpg',
+                    soup: 'https://www.inspiredtaste.net/wp-content/uploads/2018/10/Homemade-Vegetable-Soup-Recipe-2-1200.jpg',
+                    maggie: 'https://i.pinimg.com/736x/5c/6d/9f/5c6d9fe78de73a7698948e011d6745f1.jpg',
+                    oats: 'https://images.moneycontrol.com/static-mcnews/2024/08/20240827041559_oats.jpg?impolicy=website&width=1600&height=900',
+                }
+            };
+            await Menu.create(defaultMenu);
+            console.log('🍽️ Default menu inserted.');
+        }
+
+        // Seed locations if not exists
+        const locationsExist = await Location.findOne();
+        if (!locationsExist) {
+            const defaultLocations = [
+                { id: 1, name: 'Ajay', location: 'Seat_7', access: 'Confrence' },
+                { id: 2, name: 'Tannu', location: 'Seat_8', access: 'Own seat' },
+                { id: 3, name: 'Lovekush', location: 'Seat_6', access: 'Own seat' },
+                { id: 4, name: 'Ansh', location: 'Seat_5', access: 'Own seat' },
+                { id: 5, name: 'Vanshika', location: 'Seat_4', access: 'Own seat' },
+                { id: 6, name: 'Sonu', location: 'Seat_3', access: 'Confrence' },
+                { id: 7, name: 'Khushi', location: 'Seat_15', access: 'Confrence' },
+                { id: 8, name: 'Sneha', location: 'Reception', access: 'Own seat' },
+                { id: 9, name: 'Muskan', location: 'Seat_11', access: 'Own seat' },
+                { id: 10, name: 'Nikita', location: 'Seat_16', access: 'Own seat' },
+                { id: 11, name: 'Saloni', location: 'Seat_14', access: 'Own seat' },
+                { id: 12, name: 'Babita', location: 'Reception', access: 'Own seat' },
+                { id: 13, name: 'Monu', location: 'Seat_1', access: 'Own seat' },
+                { id: 14, name: 'Sourabh', location: 'Seat_2', access: 'Own seat' },
+                { id: 15, name: 'Gurmeet', location: 'Maven_Area', access: 'Confrence' },
+                { id: 16, name: 'Sneha Lathwal', location: 'Maven_Area', access: 'Own seat' },
+                { id: 17, name: 'Vanshika Jagga', location: 'Maven_Area', access: 'Own seat' },
+                { id: 18, name: 'Nisha', location: 'Reception', access: 'Pod room/Confrence' },
+                { id: 19, name: 'Suhana', location: 'Seat_10', access: 'All' },
+                { id: 20, name: 'Ketan', location: 'Ketan_Cabin', access: 'All' },
+                { id: 21, name: 'Bhavishya', location: 'Bhavishya_Cabin', access: 'All' },
+                { id: 22, name: 'Satish', location: 'Seat_12', access: 'Own seat' },
+                { id: 23, name: 'Sahil', location: 'Seat_20', access: 'Own seat/Confrence' },
+                { id: 24, name: 'Diwakar', location: 'Diwakar_Sir_Cabin', access: 'All' },
+                { id: 25, name: 'Sharma Sir', location: 'Sharma_Sir_Office', access: 'All' },
+                { id: 26, name: 'Ritesh Sir', location: 'Ritesh_Sir_Cabin', access: 'All' },
+            ];
+            await Location.insertMany(defaultLocations);
+            console.log('📍 Default locations inserted.');
         }
     } catch (error) {
         logger.error('Database Seeding Failed (E11000 likely): Please ensure your DB is empty and restart.', error);
@@ -535,17 +670,17 @@ app.get('/api/user/:userId', authorize(['user', 'kitchen', 'admin']), async (req
  */
 app.put('/api/user/:userId', authorize(['user', 'kitchen', 'admin']), async (req, res) => {
     const userId = parseInt(req.params.userId);
-    const { name, email, password } = req.body; 
+    const { name, email, password } = req.body;
 
     const updateData = {};
     if (name) updateData.name = name;
-    if (password) updateData.password = password; 
+    if (password) updateData.password = password;
 
     try {
         if (email) {
             const existingEmailUser = await User.findOne({ email, id: { $ne: userId } });
             if (existingEmailUser) {
-                 return res.status(409).json({ success: false, message: 'Email already in use by another account.' });
+                  return res.status(409).json({ success: false, message: 'Email already in use by another account.' });
             }
             updateData.email = email;
         } else {
@@ -553,11 +688,11 @@ app.put('/api/user/:userId', authorize(['user', 'kitchen', 'admin']), async (req
         }
 
         const updatedUser = await User.findOneAndUpdate(
-            { id: userId }, 
-            updateData, 
+            { id: userId },
+            updateData,
             { new: true, runValidators: true }
         ).select('-password');
-        
+
         if (!updatedUser) return res.status(404).json({ success: false, message: 'User not found.' });
 
         logger.info(`User ${userId} updated profile details.`);
@@ -568,6 +703,160 @@ app.put('/api/user/:userId', authorize(['user', 'kitchen', 'admin']), async (req
             return res.status(409).json({ success: false, message: 'Email already in use by another account (DB Index Error).' });
         }
         res.status(500).json({ success: false, message: 'Server error updating profile.' });
+    }
+});
+
+
+// --- ADMIN ROUTES (Menu Management) ---
+
+/**
+ * Endpoint 17: GET /api/menu (Fetch Menu)
+ */
+app.get('/api/menu', authorize(['admin', 'user', 'kitchen']), async (req, res) => {
+    try {
+        let menu = await Menu.findOne();
+        if (!menu) {
+            // Create default menu
+            const defaultMenu = {
+                categories: [
+                    { name: 'Coffee', icon: 'FaCoffee', items: ["Black", "Milk", "Simple", "Cold"], color: '#8B4513' },
+                    { name: 'Tea', icon: 'FaMugHot', items: ["Black", "Milk", "Green"], color: '#228B22' },
+                    { name: 'Milk', icon: 'FaGlassWhiskey', items: ["Hot", "Cold"], color: '#F5F5DC' },
+                    { name: 'Water', icon: 'FaTint', items: ["Warm", "Cold", "Hot", "Lemon"], color: '#87CEEB' },
+                    { name: 'Shikanji', icon: 'FaLemon', items: ['Shikanji'], color: '#FFD700' },
+                    { name: 'Jaljeera', icon: 'FaCube', items: ['Jaljeera'], color: '#8B0000' },
+                    { name: 'Soup', icon: 'FaUtensilSpoon', items: ['Soup'], color: '#FFA500' },
+                    { name: 'Maggie', icon: 'FaUtensilSpoon', items: ['Maggie'], color: '#FF6347' },
+                    { name: 'Oats', icon: 'FaUtensilSpoon', items: ['Oats'], color: '#D2691E' },
+                ],
+                addOns: ["Ginger", "Cloves", "Fennel Seeds", "Cardamom", "Cinnamon"],
+                sugarLevels: [0, 1, 2, 3],
+                itemImages: {
+                    tea: 'https://tmdone-cdn.s3.me-south-1.amazonaws.com/store-covers/133003776906429295.jpg',
+                    coffee: 'https://i.pinimg.com/474x/7a/29/df/7a29dfc903d98c6ba13b687ef1fa1d1a.jpg',
+                    milk: 'https://www.shutterstock.com/image-photo/almond-milk-cup-glass-on-600nw-2571172141.jpg',
+                    water: 'https://images.stockcake.com/public/d/f/f/dffca756-1b7f-4366-8b89-4ad6f9bbf88a_large/chilled-water-glass-stockcake.jpg',
+                    shikanji: 'https://i.pinimg.com/736x/1f/fd/08/1ffd086ffef72a98f234162a312cfe39.jpg',
+                    jaljeera: 'https://www.shutterstock.com/image-photo/indian-summer-drink-jaljeera-jaljira-260nw-1110952079.jpg',
+                    soup: 'https://www.inspiredtaste.net/wp-content/uploads/2018/10/Homemade-Vegetable-Soup-Recipe-2-1200.jpg',
+                    maggie: 'https://i.pinimg.com/736x/5c/6d/9f/5c6d9fe78de73a7698948e011d6745f1.jpg',
+                    oats: 'https://images.moneycontrol.com/static-mcnews/2024/08/20240827041559_oats.jpg?impolicy=website&width=1600&height=900',
+                }
+            };
+            menu = await Menu.create(defaultMenu);
+            console.log('🍽️ Default menu created on demand.');
+        } else {
+            // Ensure itemImages are present
+            if (!menu.itemImages) {
+                menu.itemImages = {
+                    tea: 'https://tmdone-cdn.s3.me-south-1.amazonaws.com/store-covers/133003776906429295.jpg',
+                    coffee: 'https://i.pinimg.com/474x/7a/29/df/7a29dfc903d98c6ba13b687ef1fa1d1a.jpg',
+                    milk: 'https://www.shutterstock.com/image-photo/almond-milk-cup-glass-on-600nw-2571172141.jpg',
+                    water: 'https://images.stockcake.com/public/d/f/f/dffca756-1b7f-4366-8b89-4ad6f9bbf88a_large/chilled-water-glass-stockcake.jpg',
+                    shikanji: 'https://i.pinimg.com/736x/1f/fd/08/1ffd086ffef72a98f234162a312cfe39.jpg',
+                    jaljeera: 'https://www.shutterstock.com/image-photo/indian-summer-drink-jaljeera-jaljira-260nw-1110952079.jpg',
+                    soup: 'https://www.inspiredtaste.net/wp-content/uploads/2018/10/Homemade-Vegetable-Soup-Recipe-2-1200.jpg',
+                    maggie: 'https://i.pinimg.com/736x/5c/6d/9f/5c6d9fe78de73a7698948e011d6745f1.jpg',
+                    oats: 'https://images.moneycontrol.com/static-mcnews/2024/08/20240827041559_oats.jpg?impolicy=website&width=1600&height=900',
+                };
+                await menu.save();
+                console.log('🍽️ Menu updated with itemImages.');
+            }
+        }
+        res.json(menu);
+    } catch (error) {
+        logger.error('Fetch Menu Error:', error);
+        res.status(500).json({ success: false, message: 'Server error fetching menu.' });
+    }
+});
+
+/**
+ * Endpoint 18: PUT /api/menu (Admin: Update Menu)
+ */
+app.put('/api/menu', authorize(['admin']), async (req, res) => {
+    const { categories, addOns, sugarLevels } = req.body;
+
+    try {
+        const updatedMenu = await Menu.findOneAndUpdate(
+            {},
+            { categories, addOns, sugarLevels },
+            { new: true, upsert: true }
+        );
+
+        logger.info(`Menu updated by Admin.`);
+        res.json({ success: true, message: 'Menu updated successfully.', menu: updatedMenu });
+    } catch (error) {
+        logger.error('Update Menu Error:', error);
+        res.status(500).json({ success: false, message: 'Server error updating menu.' });
+    }
+});
+
+// --- ADMIN ROUTES (Location Management) ---
+
+/**
+ * Endpoint 19: GET /api/locations (Fetch Locations)
+ */
+app.get('/api/locations', authorize(['admin', 'user', 'kitchen']), async (req, res) => {
+    try {
+        let locations = await Location.find().sort({ id: 1 });
+        if (locations.length === 0) {
+            // Create default locations
+            const defaultLocations = [
+                { id: 1, name: 'Ajay', location: 'Seat_7', access: 'Confrence' },
+                { id: 2, name: 'Tannu', location: 'Seat_8', access: 'Own seat' },
+                { id: 3, name: 'Lovekush', location: 'Seat_6', access: 'Own seat' },
+                { id: 4, name: 'Ansh', location: 'Seat_5', access: 'Own seat' },
+                { id: 5, name: 'Vanshika', location: 'Seat_4', access: 'Own seat' },
+                { id: 6, name: 'Sonu', location: 'Seat_3', access: 'Confrence' },
+                { id: 7, name: 'Khushi', location: 'Seat_15', access: 'Confrence' },
+                { id: 8, name: 'Sneha', location: 'Reception', access: 'Own seat' },
+                { id: 9, name: 'Muskan', location: 'Seat_11', access: 'Own seat' },
+                { id: 10, name: 'Nikita', location: 'Seat_16', access: 'Own seat' },
+                { id: 11, name: 'Saloni', location: 'Seat_14', access: 'Own seat' },
+                { id: 12, name: 'Babita', location: 'Reception', access: 'Own seat' },
+                { id: 13, name: 'Monu', location: 'Seat_1', access: 'Own seat' },
+                { id: 14, name: 'Sourabh', location: 'Seat_2', access: 'Own seat' },
+                { id: 15, name: 'Gurmeet', location: 'Maven_Area', access: 'Confrence' },
+                { id: 16, name: 'Sneha Lathwal', location: 'Maven_Area', access: 'Own seat' },
+                { id: 17, name: 'Vanshika Jagga', location: 'Maven_Area', access: 'Own seat' },
+                { id: 18, name: 'Nisha', location: 'Reception', access: 'Pod room/Confrence' },
+                { id: 19, name: 'Suhana', location: 'Seat_10', access: 'All' },
+                { id: 20, name: 'Ketan', location: 'Ketan_Cabin', access: 'All' },
+                { id: 21, name: 'Bhavishya', location: 'Bhavishya_Cabin', access: 'All' },
+                { id: 22, name: 'Satish', location: 'Seat_12', access: 'Own seat' },
+                { id: 23, name: 'Sahil', location: 'Seat_20', access: 'Own seat/Confrence' },
+                { id: 24, name: 'Diwakar', location: 'Diwakar_Sir_Cabin', access: 'All' },
+                { id: 25, name: 'Sharma Sir', location: 'Sharma_Sir_Office', access: 'All' },
+                { id: 26, name: 'Ritesh Sir', location: 'Ritesh_Sir_Cabin', access: 'All' },
+            ];
+            locations = await Location.insertMany(defaultLocations);
+            console.log('📍 Default locations created on demand.');
+        }
+        res.json(locations);
+    } catch (error) {
+        logger.error('Fetch Locations Error:', error);
+        res.status(500).json({ success: false, message: 'Server error fetching locations.' });
+    }
+});
+
+/**
+ * Endpoint 20: PUT /api/locations (Admin: Update Locations)
+ */
+app.put('/api/locations', authorize(['admin']), async (req, res) => {
+    const { locations } = req.body;
+
+    try {
+        // Delete all existing locations
+        await Location.deleteMany({});
+
+        // Insert new locations
+        const newLocations = await Location.insertMany(locations);
+
+        logger.info(`Locations updated by Admin.`);
+        res.json({ success: true, message: 'Locations updated successfully.', locations: newLocations });
+    } catch (error) {
+        logger.error('Update Locations Error:', error);
+        res.status(500).json({ success: false, message: 'Server error updating locations.' });
     }
 });
 

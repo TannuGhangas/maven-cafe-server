@@ -4,10 +4,10 @@ const mongoose = require('mongoose');
 
 const OrderItemSchema = new mongoose.Schema({
     // 1. UPDATED: Expanded the item enum to match frontend configuration logic (including Maggie, Shikanji, Jaljeera)
-    item: { 
-        type: String, 
-        required: true, 
-        enum: ['coffee', 'tea', 'milk', 'water', 'shikanji', 'jaljeera', 'maggie'] 
+    item: {
+        type: String,
+        required: true,
+        enum: ['coffee', 'tea', 'milk', 'water', 'shikanji', 'jaljeera', 'maggie', 'soup', 'oats']
     },
     type: { type: String, required: false }, // e.g., 'Black Coffee', 'Masala Tea', 'Hot Milk'
     
