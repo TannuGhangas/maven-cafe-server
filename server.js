@@ -75,7 +75,6 @@ async function seedDatabase() {
                 categories: [
                     { name: 'Coffee', icon: 'FaCoffee', items: ["Black", "Milk", "Simple", "Cold"], color: '#8B4513' },
                     { name: 'Tea', icon: 'FaMugHot', items: ["Black", "Milk", "Green"], color: '#228B22' },
-                    { name: 'Milk', icon: 'FaGlassWhiskey', items: ["Hot", "Cold"], color: '#F5F5DC' },
                     { name: 'Water', icon: 'FaTint', items: ["Warm", "Cold", "Hot", "Lemon"], color: '#87CEEB' },
                     { name: 'Shikanji', icon: 'FaLemon', items: ['Shikanji'], color: '#FFD700' },
                     { name: 'Jaljeera', icon: 'FaCube', items: ['Jaljeera'], color: '#8B0000' },
@@ -88,7 +87,6 @@ async function seedDatabase() {
                 itemImages: {
                     tea: 'https://tmdone-cdn.s3.me-south-1.amazonaws.com/store-covers/133003776906429295.jpg',
                     coffee: 'https://i.pinimg.com/474x/7a/29/df/7a29dfc903d98c6ba13b687ef1fa1d1a.jpg',
-                    milk: 'https://www.shutterstock.com/image-photo/almond-milk-cup-glass-on-600nw-2571172141.jpg',
                     water: 'https://images.stockcake.com/public/d/f/f/dffca756-1b7f-4366-8b89-4ad6f9bbf88a_large/chilled-water-glass-stockcake.jpg',
                     shikanji: 'https://i.pinimg.com/736x/1f/fd/08/1ffd086ffef72a98f234162a312cfe39.jpg',
                     jaljeera: 'https://www.shutterstock.com/image-photo/indian-summer-drink-jaljeera-jaljira-260nw-1110952079.jpg',
@@ -131,10 +129,6 @@ async function seedDatabase() {
             ];
             await Location.insertMany(defaultLocations);
             console.log('📍 Default locations inserted.');
-        } else {
-            // Ensure Tannu is admin
-            await User.updateOne({ username: 'Tannu' }, { role: 'admin', enabled: true });
-            console.log('🔄 Tannu role updated to admin.');
         }
 
         // Seed menu if not exists
@@ -144,7 +138,6 @@ async function seedDatabase() {
                 categories: [
                     { name: 'Coffee', icon: 'FaCoffee', items: ["Black", "Milk", "Simple", "Cold"], color: '#8B4513' },
                     { name: 'Tea', icon: 'FaMugHot', items: ["Black", "Milk", "Green"], color: '#228B22' },
-                    { name: 'Milk', icon: 'FaGlassWhiskey', items: ["Hot", "Cold"], color: '#F5F5DC' },
                     { name: 'Water', icon: 'FaTint', items: ["Warm", "Cold", "Hot", "Lemon"], color: '#87CEEB' },
                     { name: 'Shikanji', icon: 'FaLemon', items: ['Shikanji'], color: '#FFD700' },
                     { name: 'Jaljeera', icon: 'FaCube', items: ['Jaljeera'], color: '#8B0000' },
@@ -157,7 +150,6 @@ async function seedDatabase() {
                 itemImages: {
                     tea: 'https://tmdone-cdn.s3.me-south-1.amazonaws.com/store-covers/133003776906429295.jpg',
                     coffee: 'https://i.pinimg.com/474x/7a/29/df/7a29dfc903d98c6ba13b687ef1fa1d1a.jpg',
-                    milk: 'https://www.shutterstock.com/image-photo/almond-milk-cup-glass-on-600nw-2571172141.jpg',
                     water: 'https://images.stockcake.com/public/d/f/f/dffca756-1b7f-4366-8b89-4ad6f9bbf88a_large/chilled-water-glass-stockcake.jpg',
                     shikanji: 'https://i.pinimg.com/736x/1f/fd/08/1ffd086ffef72a98f234162a312cfe39.jpg',
                     jaljeera: 'https://www.shutterstock.com/image-photo/indian-summer-drink-jaljeera-jaljira-260nw-1110952079.jpg',
@@ -721,7 +713,6 @@ app.get('/menu', authorize(['admin', 'user', 'kitchen']), async (req, res) => {
                 categories: [
                     { name: 'Coffee', icon: 'FaCoffee', items: ["Black", "Milk", "Simple", "Cold"], color: '#8B4513' },
                     { name: 'Tea', icon: 'FaMugHot', items: ["Black", "Milk", "Green"], color: '#228B22' },
-                    { name: 'Milk', icon: 'FaGlassWhiskey', items: ["Hot", "Cold"], color: '#F5F5DC' },
                     { name: 'Water', icon: 'FaTint', items: ["Warm", "Cold", "Hot", "Lemon"], color: '#87CEEB' },
                     { name: 'Shikanji', icon: 'FaLemon', items: ['Shikanji'], color: '#FFD700' },
                     { name: 'Jaljeera', icon: 'FaCube', items: ['Jaljeera'], color: '#8B0000' },
@@ -734,7 +725,6 @@ app.get('/menu', authorize(['admin', 'user', 'kitchen']), async (req, res) => {
                 itemImages: {
                     tea: 'https://tmdone-cdn.s3.me-south-1.amazonaws.com/store-covers/133003776906429295.jpg',
                     coffee: 'https://i.pinimg.com/474x/7a/29/df/7a29dfc903d98c6ba13b687ef1fa1d1a.jpg',
-                    milk: 'https://www.shutterstock.com/image-photo/almond-milk-cup-glass-on-600nw-2571172141.jpg',
                     water: 'https://images.stockcake.com/public/d/f/f/dffca756-1b7f-4366-8b89-4ad6f9bbf88a_large/chilled-water-glass-stockcake.jpg',
                     shikanji: 'https://i.pinimg.com/736x/1f/fd/08/1ffd086ffef72a98f234162a312cfe39.jpg',
                     jaljeera: 'https://www.shutterstock.com/image-photo/indian-summer-drink-jaljeera-jaljira-260nw-1110952079.jpg',
@@ -751,7 +741,6 @@ app.get('/menu', authorize(['admin', 'user', 'kitchen']), async (req, res) => {
                 menu.itemImages = {
                     tea: 'https://tmdone-cdn.s3.me-south-1.amazonaws.com/store-covers/133003776906429295.jpg',
                     coffee: 'https://i.pinimg.com/474x/7a/29/df/7a29dfc903d98c6ba13b687ef1fa1d1a.jpg',
-                    milk: 'https://www.shutterstock.com/image-photo/almond-milk-cup-glass-on-600nw-2571172141.jpg',
                     water: 'https://images.stockcake.com/public/d/f/f/dffca756-1b7f-4366-8b89-4ad6f9bbf88a_large/chilled-water-glass-stockcake.jpg',
                     shikanji: 'https://i.pinimg.com/736x/1f/fd/08/1ffd086ffef72a98f234162a312cfe39.jpg',
                     jaljeera: 'https://www.shutterstock.com/image-photo/indian-summer-drink-jaljeera-jaljira-260nw-1110952079.jpg',
