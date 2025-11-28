@@ -710,9 +710,9 @@ app.put('/api/user/:userId', authorize(['user', 'kitchen', 'admin']), async (req
 // --- ADMIN ROUTES (Menu Management) ---
 
 /**
- * Endpoint 17: GET /api/menu (Fetch Menu)
+ * Endpoint 17: GET /menu (Fetch Menu)
  */
-app.get('/api/menu', authorize(['admin', 'user', 'kitchen']), async (req, res) => {
+app.get('/menu', authorize(['admin', 'user', 'kitchen']), async (req, res) => {
     try {
         let menu = await Menu.findOne();
         if (!menu) {
