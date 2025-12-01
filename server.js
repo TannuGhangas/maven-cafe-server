@@ -261,13 +261,13 @@ app.post('/api/login', async (req, res) => {
     }
 
     try {
-        const user = await User.findOne({ username, password }); 
+        const user = await User.findOne({ username, password });
 
         if (user && user.enabled) {
-            return res.json({ 
-                success: true, 
-                message: 'Login successful', 
-                user: { id: user.id, name: user.name, role: user.role, username: user.username } 
+            return res.json({
+                success: true,
+                message: 'Login successful',
+                user: { id: user.id, name: user.name, role: user.role, username: user.username }
             });
         } else if (user && !user.enabled) {
             return res.status(403).json({ success: false, message: 'Your account has been disabled by an administrator.' });
