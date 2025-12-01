@@ -19,11 +19,7 @@ const DB_URI = process.env.DB_URI;
 // --- 2. CONFIGURATION & MIDDLEWARE ---
 app.use(
     cors({
-        origin: [
-            "http://localhost:5173", 
-            "http://10.119.41.34:5173", 
-            "https://maven-cafe-frontend.vercel.app" 
-        ],
+        origin: true, // Allow all origins for development
         methods: "GET,POST,PUT,DELETE",
         allowedHeaders: "Content-Type,Authorization"
     })
@@ -76,11 +72,11 @@ async function seedDatabase() {
                     { name: 'Coffee', icon: 'FaCoffee', items: ["Black", "Milk", "Simple", "Cold"], color: '#8B4513' },
                     { name: 'Tea', icon: 'FaMugHot', items: ["Black", "Milk", "Green"], color: '#228B22' },
                     { name: 'Water', icon: 'FaTint', items: ["Warm", "Cold", "Hot", "Lemon"], color: '#87CEEB' },
-                    { name: 'Shikanji', icon: 'FaLemon', items: ['Shikanji'], color: '#FFD700' },
-                    { name: 'Jaljeera', icon: 'FaCube', items: ['Jaljeera'], color: '#8B0000' },
-                    { name: 'Soup', icon: 'FaUtensilSpoon', items: ['Soup'], color: '#FFA500' },
-                    { name: 'Maggie', icon: 'FaUtensilSpoon', items: ['Maggie'], color: '#FF6347' },
-                    { name: 'Oats', icon: 'FaUtensilSpoon', items: ['Oats'], color: '#D2691E' },
+                    { name: 'Shikanji', icon: 'FaLemon', items: ['normal'], color: '#FFD700' },
+                    { name: 'Jaljeera', icon: 'FaCube', items: ['normal'], color: '#8B0000' },
+                    { name: 'Soup', icon: 'FaUtensilSpoon', items: ['normal'], color: '#FFA500' },
+                    { name: 'Maggie', icon: 'FaUtensilSpoon', items: ['normal'], color: '#FF6347' },
+                    { name: 'Oats', icon: 'FaUtensilSpoon', items: ['normal'], color: '#D2691E' },
                 ],
                 addOns: ["Ginger", "Cloves", "Fennel Seeds", "Cardamom", "Cinnamon"],
                 sugarLevels: [0, 1, 2, 3],
@@ -89,7 +85,7 @@ async function seedDatabase() {
                     coffee: 'https://i.pinimg.com/474x/7a/29/df/7a29dfc903d98c6ba13b687ef1fa1d1a.jpg',
                     water: 'https://images.stockcake.com/public/d/f/f/dffca756-1b7f-4366-8b89-4ad6f9bbf88a_large/chilled-water-glass-stockcake.jpg',
                     shikanji: 'https://i.pinimg.com/736x/1f/fd/08/1ffd086ffef72a98f234162a312cfe39.jpg',
-                    jaljeera: 'https://www.shutterstock.com/image-photo/indian-summer-drink-jaljeera-jaljira-260nw-1110952079.jpg',
+                    jaljeera: 'https://i.ndtvimg.com/i/2018-02/jaljeera_620x330_81517570928.jpg',
                     soup: 'https://www.inspiredtaste.net/wp-content/uploads/2018/10/Homemade-Vegetable-Soup-Recipe-2-1200.jpg',
                     maggie: 'https://i.pinimg.com/736x/5c/6d/9f/5c6d9fe78de73a7698948e011d6745f1.jpg',
                     oats: 'https://images.moneycontrol.com/static-mcnews/2024/08/20240827041559_oats.jpg?impolicy=website&width=1600&height=900',
@@ -139,11 +135,11 @@ async function seedDatabase() {
                     { name: 'Coffee', icon: 'FaCoffee', items: ["Black", "Milk", "Simple", "Cold"], color: '#8B4513' },
                     { name: 'Tea', icon: 'FaMugHot', items: ["Black", "Milk", "Green"], color: '#228B22' },
                     { name: 'Water', icon: 'FaTint', items: ["Warm", "Cold", "Hot", "Lemon"], color: '#87CEEB' },
-                    { name: 'Shikanji', icon: 'FaLemon', items: ['Shikanji'], color: '#FFD700' },
-                    { name: 'Jaljeera', icon: 'FaCube', items: ['Jaljeera'], color: '#8B0000' },
-                    { name: 'Soup', icon: 'FaUtensilSpoon', items: ['Soup'], color: '#FFA500' },
-                    { name: 'Maggie', icon: 'FaUtensilSpoon', items: ['Maggie'], color: '#FF6347' },
-                    { name: 'Oats', icon: 'FaUtensilSpoon', items: ['Oats'], color: '#D2691E' },
+                    { name: 'Shikanji', icon: 'FaLemon', items: ['normal'], color: '#FFD700' },
+                    { name: 'Jaljeera', icon: 'FaCube', items: ['normal'], color: '#8B0000' },
+                    { name: 'Soup', icon: 'FaUtensilSpoon', items: ['normal'], color: '#FFA500' },
+                    { name: 'Maggie', icon: 'FaUtensilSpoon', items: ['normal'], color: '#FF6347' },
+                    { name: 'Oats', icon: 'FaUtensilSpoon', items: ['normal'], color: '#D2691E' },
                 ],
                 addOns: ["Ginger", "Cloves", "Fennel Seeds", "Cardamom", "Cinnamon"],
                 sugarLevels: [0, 1, 2, 3],
@@ -152,7 +148,7 @@ async function seedDatabase() {
                     coffee: 'https://i.pinimg.com/474x/7a/29/df/7a29dfc903d98c6ba13b687ef1fa1d1a.jpg',
                     water: 'https://images.stockcake.com/public/d/f/f/dffca756-1b7f-4366-8b89-4ad6f9bbf88a_large/chilled-water-glass-stockcake.jpg',
                     shikanji: 'https://i.pinimg.com/736x/1f/fd/08/1ffd086ffef72a98f234162a312cfe39.jpg',
-                    jaljeera: 'https://www.shutterstock.com/image-photo/indian-summer-drink-jaljeera-jaljira-260nw-1110952079.jpg',
+                    jaljeera: 'https://i.ndtvimg.com/i/2018-02/jaljeera_620x330_81517570928.jpg',
                     soup: 'https://www.inspiredtaste.net/wp-content/uploads/2018/10/Homemade-Vegetable-Soup-Recipe-2-1200.jpg',
                     maggie: 'https://i.pinimg.com/736x/5c/6d/9f/5c6d9fe78de73a7698948e011d6745f1.jpg',
                     oats: 'https://images.moneycontrol.com/static-mcnews/2024/08/20240827041559_oats.jpg?impolicy=website&width=1600&height=900',
@@ -304,6 +300,7 @@ app.post('/api/orders', authorize(['user', 'admin']), async (req, res) => {
             slot,
             items,
             status: 'Placed',
+            tags: ['New'],
             timestamp: Date.now(),
         });
 
@@ -702,9 +699,9 @@ app.put('/api/user/:userId', authorize(['user', 'kitchen', 'admin']), async (req
 // --- ADMIN ROUTES (Menu Management) ---
 
 /**
- * Endpoint 17: GET /menu (Fetch Menu)
+ * Endpoint 17: GET /api/menu (Fetch Menu)
  */
-app.get('/menu', authorize(['admin', 'user', 'kitchen']), async (req, res) => {
+app.get('/api/menu', authorize(['admin', 'user', 'kitchen']), async (req, res) => {
     try {
         let menu = await Menu.findOne();
         if (!menu) {
@@ -714,11 +711,11 @@ app.get('/menu', authorize(['admin', 'user', 'kitchen']), async (req, res) => {
                     { name: 'Coffee', icon: 'FaCoffee', items: ["Black", "Milk", "Simple", "Cold"], color: '#8B4513' },
                     { name: 'Tea', icon: 'FaMugHot', items: ["Black", "Milk", "Green"], color: '#228B22' },
                     { name: 'Water', icon: 'FaTint', items: ["Warm", "Cold", "Hot", "Lemon"], color: '#87CEEB' },
-                    { name: 'Shikanji', icon: 'FaLemon', items: ['Shikanji'], color: '#FFD700' },
-                    { name: 'Jaljeera', icon: 'FaCube', items: ['Jaljeera'], color: '#8B0000' },
-                    { name: 'Soup', icon: 'FaUtensilSpoon', items: ['Soup'], color: '#FFA500' },
-                    { name: 'Maggie', icon: 'FaUtensilSpoon', items: ['Maggie'], color: '#FF6347' },
-                    { name: 'Oats', icon: 'FaUtensilSpoon', items: ['Oats'], color: '#D2691E' },
+                    { name: 'Shikanji', icon: 'FaLemon', items: ['normal'], color: '#FFD700' },
+                    { name: 'Jaljeera', icon: 'FaCube', items: ['normal'], color: '#8B0000' },
+                    { name: 'Soup', icon: 'FaUtensilSpoon', items: ['normal'], color: '#FFA500' },
+                    { name: 'Maggie', icon: 'FaUtensilSpoon', items: ['normal'], color: '#FF6347' },
+                    { name: 'Oats', icon: 'FaUtensilSpoon', items: ['normal'], color: '#D2691E' },
                 ],
                 addOns: ["Ginger", "Cloves", "Fennel Seeds", "Cardamom", "Cinnamon"],
                 sugarLevels: [0, 1, 2, 3],
@@ -727,7 +724,7 @@ app.get('/menu', authorize(['admin', 'user', 'kitchen']), async (req, res) => {
                     coffee: 'https://i.pinimg.com/474x/7a/29/df/7a29dfc903d98c6ba13b687ef1fa1d1a.jpg',
                     water: 'https://images.stockcake.com/public/d/f/f/dffca756-1b7f-4366-8b89-4ad6f9bbf88a_large/chilled-water-glass-stockcake.jpg',
                     shikanji: 'https://i.pinimg.com/736x/1f/fd/08/1ffd086ffef72a98f234162a312cfe39.jpg',
-                    jaljeera: 'https://www.shutterstock.com/image-photo/indian-summer-drink-jaljeera-jaljira-260nw-1110952079.jpg',
+                    jaljeera: 'https://i.ndtvimg.com/i/2018-02/jaljeera_620x330_81517570928.jpg',
                     soup: 'https://www.inspiredtaste.net/wp-content/uploads/2018/10/Homemade-Vegetable-Soup-Recipe-2-1200.jpg',
                     maggie: 'https://i.pinimg.com/736x/5c/6d/9f/5c6d9fe78de73a7698948e011d6745f1.jpg',
                     oats: 'https://images.moneycontrol.com/static-mcnews/2024/08/20240827041559_oats.jpg?impolicy=website&width=1600&height=900',
@@ -743,7 +740,7 @@ app.get('/menu', authorize(['admin', 'user', 'kitchen']), async (req, res) => {
                     coffee: 'https://i.pinimg.com/474x/7a/29/df/7a29dfc903d98c6ba13b687ef1fa1d1a.jpg',
                     water: 'https://images.stockcake.com/public/d/f/f/dffca756-1b7f-4366-8b89-4ad6f9bbf88a_large/chilled-water-glass-stockcake.jpg',
                     shikanji: 'https://i.pinimg.com/736x/1f/fd/08/1ffd086ffef72a98f234162a312cfe39.jpg',
-                    jaljeera: 'https://www.shutterstock.com/image-photo/indian-summer-drink-jaljeera-jaljira-260nw-1110952079.jpg',
+                    jaljeera: 'https://i.ndtvimg.com/i/2018-02/jaljeera_620x330_81517570928.jpg',
                     soup: 'https://www.inspiredtaste.net/wp-content/uploads/2018/10/Homemade-Vegetable-Soup-Recipe-2-1200.jpg',
                     maggie: 'https://i.pinimg.com/736x/5c/6d/9f/5c6d9fe78de73a7698948e011d6745f1.jpg',
                     oats: 'https://images.moneycontrol.com/static-mcnews/2024/08/20240827041559_oats.jpg?impolicy=website&width=1600&height=900',
@@ -763,12 +760,12 @@ app.get('/menu', authorize(['admin', 'user', 'kitchen']), async (req, res) => {
  * Endpoint 18: PUT /api/menu (Admin: Update Menu)
  */
 app.put('/api/menu', authorize(['admin']), async (req, res) => {
-    const { categories, addOns, sugarLevels } = req.body;
+    const { categories, addOns, sugarLevels, itemImages } = req.body;
 
     try {
         const updatedMenu = await Menu.findOneAndUpdate(
             {},
-            { categories, addOns, sugarLevels },
+            { categories, addOns, sugarLevels, itemImages },
             { new: true, upsert: true }
         );
 
@@ -867,9 +864,10 @@ app.use((err, req, res, next) => {
 
 
 // --- 8. START SERVER ---
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n======================================================`);
     console.log(`🚀 Maven Cafe Backend Server running on port ${PORT}`);
+    console.log(`🌐 Server accessible at: http://0.0.0.0:${PORT} (or your local IP)`);
     console.log(`🔌 Connected to MongoDB URI: ${DB_URI ? DB_URI.substring(0, 30) : '...' }...`);
     console.log(`======================================================\n`);
 });

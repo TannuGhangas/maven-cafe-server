@@ -34,6 +34,7 @@ const OrderSchema = new mongoose.Schema({
         enum: ['Placed', 'Making', 'Ready', 'Delivered'],
         default: 'Placed'
     },
+    tags: { type: [String], default: [] },
     timestamp: {
         type: Date,
         default: Date.now
