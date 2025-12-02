@@ -69,17 +69,17 @@ async function seedDatabase() {
             // Seed default menu
             const defaultMenu = {
                 categories: [
-                    { name: 'Coffee', icon: 'FaCoffee', items: ["Black", "Milk", "Simple", "Cold"], color: '#8B4513' },
-                    { name: 'Tea', icon: 'FaMugHot', items: ["Black", "Milk", "Green"], color: '#228B22' },
-                    { name: 'Water', icon: 'FaTint', items: ["Warm", "Cold", "Hot", "Lemon"], color: '#87CEEB' },
-                    { name: 'Shikanji', icon: 'FaLemon', items: ['normal'], color: '#FFD700' },
-                    { name: 'Jaljeera', icon: 'FaCube', items: ['normal'], color: '#8B0000' },
-                    { name: 'Soup', icon: 'FaUtensilSpoon', items: ['normal'], color: '#FFA500' },
-                    { name: 'Maggie', icon: 'FaUtensilSpoon', items: ['normal'], color: '#FF6347' },
-                    { name: 'Oats', icon: 'FaUtensilSpoon', items: ['normal'], color: '#D2691E' },
+                    { name: 'Coffee', icon: 'FaCoffee', items: [{ name: "Black", available: true }, { name: "Milk", available: true }, { name: "Simple", available: true }, { name: "Cold", available: true }], color: '#8B4513', enabled: true },
+                    { name: 'Tea', icon: 'FaMugHot', items: [{ name: "Black", available: true }, { name: "Milk", available: true }, { name: "Green", available: true }], color: '#228B22', enabled: true },
+                    { name: 'Water', icon: 'FaTint', items: [{ name: "Warm", available: true }, { name: "Cold", available: true }, { name: "Hot", available: true }, { name: "Lemon", available: true }], color: '#87CEEB', enabled: true },
+                    { name: 'Shikanji', icon: 'FaLemon', items: [{ name: 'normal', available: true }], color: '#FFD700', enabled: true },
+                    { name: 'Jaljeera', icon: 'FaCube', items: [{ name: 'normal', available: true }], color: '#8B0000', enabled: true },
+                    { name: 'Soup', icon: 'FaUtensilSpoon', items: [{ name: 'normal', available: true }], color: '#FFA500', enabled: true },
+                    { name: 'Maggie', icon: 'FaUtensilSpoon', items: [{ name: 'normal', available: true }], color: '#FF6347', enabled: true },
+                    { name: 'Oats', icon: 'FaUtensilSpoon', items: [{ name: 'normal', available: true }], color: '#D2691E', enabled: true },
                 ],
-                addOns: ["Ginger", "Cloves", "Fennel Seeds", "Cardamom", "Cinnamon"],
-                sugarLevels: [0, 1, 2, 3],
+                addOns: [{ name: "Ginger", enabled: true }, { name: "Cloves", enabled: true }, { name: "Fennel Seeds", enabled: true }, { name: "Cardamom", enabled: true }, { name: "Cinnamon", enabled: true }],
+                sugarLevels: [{ level: 0, enabled: true }, { level: 1, enabled: true }, { level: 2, enabled: true }, { level: 3, enabled: true }],
                 itemImages: {
                     tea: 'https://tmdone-cdn.s3.me-south-1.amazonaws.com/store-covers/133003776906429295.jpg',
                     coffee: 'https://i.pinimg.com/474x/7a/29/df/7a29dfc903d98c6ba13b687ef1fa1d1a.jpg',
@@ -141,8 +141,8 @@ async function seedDatabase() {
                     { name: 'Maggie', icon: 'FaUtensilSpoon', items: ['normal'], color: '#FF6347' },
                     { name: 'Oats', icon: 'FaUtensilSpoon', items: ['normal'], color: '#D2691E' },
                 ],
-                addOns: ["Ginger", "Cloves", "Fennel Seeds", "Cardamom", "Cinnamon"],
-                sugarLevels: [0, 1, 2, 3],
+                addOns: [{ name: "Ginger", available: true }, { name: "Cloves", available: true }, { name: "Fennel Seeds", available: true }, { name: "Cardamom", available: true }, { name: "Cinnamon", available: true }],
+                sugarLevels: [{ level: 0, available: true }, { level: 1, available: true }, { level: 2, available: true }, { level: 3, available: true }],
                 itemImages: {
                     tea: 'https://tmdone-cdn.s3.me-south-1.amazonaws.com/store-covers/133003776906429295.jpg',
                     coffee: 'https://i.pinimg.com/474x/7a/29/df/7a29dfc903d98c6ba13b687ef1fa1d1a.jpg',
@@ -394,9 +394,9 @@ app.put('/api/feedback/:id', authorize(['admin', 'kitchen']), async (req, res) =
  */
 app.get('/api/orders/:userId', authorize(['user']), async (req, res) => {
     const userId = parseInt(req.params.userId);
-    
+
     try {
-        const userOrders = await Order.find({ userId, status: { $ne: 'Delivered' } }).sort({ timestamp: -1 });
+        const userOrders = await Order.find({ userId }).sort({ timestamp: -1 });
         res.json(userOrders);
     } catch (error) {
         logger.error('Fetch User Orders Error:', error);
@@ -475,8 +475,8 @@ app.put('/api/orders/:orderId/status', authorize(['admin', 'kitchen']), async (r
     
     try {
         const updatedOrder = await Order.findByIdAndUpdate(
-            orderId, 
-            { status }, 
+            orderId,
+            { status, $pull: { tags: 'New' } },
             { new: true }
         );
 
@@ -717,8 +717,8 @@ app.get('/api/menu', authorize(['admin', 'user', 'kitchen']), async (req, res) =
                     { name: 'Maggie', icon: 'FaUtensilSpoon', items: ['normal'], color: '#FF6347' },
                     { name: 'Oats', icon: 'FaUtensilSpoon', items: ['normal'], color: '#D2691E' },
                 ],
-                addOns: ["Ginger", "Cloves", "Fennel Seeds", "Cardamom", "Cinnamon"],
-                sugarLevels: [0, 1, 2, 3],
+                addOns: [{ name: "Ginger", available: true }, { name: "Cloves", available: true }, { name: "Fennel Seeds", available: true }, { name: "Cardamom", available: true }, { name: "Cinnamon", available: true }],
+                sugarLevels: [{ level: 0, available: true }, { level: 1, available: true }, { level: 2, available: true }, { level: 3, available: true }],
                 itemImages: {
                     tea: 'https://tmdone-cdn.s3.me-south-1.amazonaws.com/store-covers/133003776906429295.jpg',
                     coffee: 'https://i.pinimg.com/474x/7a/29/df/7a29dfc903d98c6ba13b687ef1fa1d1a.jpg',
@@ -757,9 +757,9 @@ app.get('/api/menu', authorize(['admin', 'user', 'kitchen']), async (req, res) =
 });
 
 /**
- * Endpoint 18: PUT /api/menu (Admin: Update Menu)
+ * Endpoint 18: PUT /api/menu (Admin/Kitchen: Update Menu)
  */
-app.put('/api/menu', authorize(['admin']), async (req, res) => {
+app.put('/api/menu', authorize(['admin', 'kitchen']), async (req, res) => {
     const { categories, addOns, sugarLevels, itemImages } = req.body;
 
     try {
