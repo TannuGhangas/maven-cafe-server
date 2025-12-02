@@ -705,14 +705,14 @@ app.get('/api/menu', authorize(['admin', 'user', 'kitchen']), async (req, res) =
             // Create default menu
             const defaultMenu = {
                 categories: [
-                    { name: 'Coffee', icon: 'FaCoffee', items: ["Black", "Milk", "Simple", "Cold"], color: '#8B4513' },
-                    { name: 'Tea', icon: 'FaMugHot', items: ["Black", "Milk", "Green"], color: '#228B22' },
-                    { name: 'Water', icon: 'FaTint', items: ["Warm", "Cold", "Hot", "Lemon"], color: '#87CEEB' },
-                    { name: 'Shikanji', icon: 'FaLemon', items: ['normal'], color: '#FFD700' },
-                    { name: 'Jaljeera', icon: 'FaCube', items: ['normal'], color: '#8B0000' },
-                    { name: 'Soup', icon: 'FaUtensilSpoon', items: ['normal'], color: '#FFA500' },
-                    { name: 'Maggie', icon: 'FaUtensilSpoon', items: ['normal'], color: '#FF6347' },
-                    { name: 'Oats', icon: 'FaUtensilSpoon', items: ['normal'], color: '#D2691E' },
+                    { name: 'Coffee', icon: 'FaCoffee', items: [{ name: "Black", available: true }, { name: "Milk", available: true }, { name: "Simple", available: true }, { name: "Cold", available: true }], color: '#8B4513', enabled: true },
+                    { name: 'Tea', icon: 'FaMugHot', items: [{ name: "Black", available: true }, { name: "Milk", available: true }, { name: "Green", available: true }], color: '#228B22', enabled: true },
+                    { name: 'Water', icon: 'FaTint', items: [{ name: "Warm", available: true }, { name: "Cold", available: true }, { name: "Hot", available: true }, { name: "Lemon", available: true }], color: '#87CEEB', enabled: true },
+                    { name: 'Shikanji', icon: 'FaLemon', items: [{ name: 'normal', available: true }], color: '#FFD700', enabled: true },
+                    { name: 'Jaljeera', icon: 'FaCube', items: [{ name: 'normal', available: true }], color: '#8B0000', enabled: true },
+                    { name: 'Soup', icon: 'FaUtensilSpoon', items: [{ name: 'normal', available: true }], color: '#FFA500', enabled: true },
+                    { name: 'Maggie', icon: 'FaUtensilSpoon', items: [{ name: 'normal', available: true }], color: '#FF6347', enabled: true },
+                    { name: 'Oats', icon: 'FaUtensilSpoon', items: [{ name: 'normal', available: true }], color: '#D2691E', enabled: true },
                 ],
                 addOns: [{ name: "Ginger", available: true }, { name: "Cloves", available: true }, { name: "Fennel Seeds", available: true }, { name: "Cardamom", available: true }, { name: "Cinnamon", available: true }],
                 sugarLevels: [{ level: 0, available: true }, { level: 1, available: true }, { level: 2, available: true }, { level: 3, available: true }],
@@ -730,6 +730,29 @@ app.get('/api/menu', authorize(['admin', 'user', 'kitchen']), async (req, res) =
             menu = await Menu.create(defaultMenu);
             console.log('🍽️ Default menu created on demand.');
         } else {
+            // Normalize addOns and sugarLevels to objects
+            if (menu.addOns && Array.isArray(menu.addOns)) {
+                menu.addOns = menu.addOns.map(addOn => {
+                    if (typeof addOn === 'string') {
+                        return { name: addOn, available: true };
+                    }
+                    return addOn;
+                });
+            } else {
+                menu.addOns = [{ name: "Ginger", available: true }, { name: "Cloves", available: true }, { name: "Fennel Seeds", available: true }, { name: "Cardamom", available: true }, { name: "Cinnamon", available: true }];
+            }
+
+            if (menu.sugarLevels && Array.isArray(menu.sugarLevels)) {
+                menu.sugarLevels = menu.sugarLevels.map(level => {
+                    if (typeof level === 'number') {
+                        return { level: level, available: true };
+                    }
+                    return level;
+                });
+            } else {
+                menu.sugarLevels = [{ level: 0, available: true }, { level: 1, available: true }, { level: 2, available: true }, { level: 3, available: true }];
+            }
+
             // Ensure itemImages are present
             if (!menu.itemImages) {
                 menu.itemImages = {
@@ -742,9 +765,8 @@ app.get('/api/menu', authorize(['admin', 'user', 'kitchen']), async (req, res) =
                     maggie: 'https://i.pinimg.com/736x/5c/6d/9f/5c6d9fe78de73a7698948e011d6745f1.jpg',
                     oats: 'https://images.moneycontrol.com/static-mcnews/2024/08/20240827041559_oats.jpg?impolicy=website&width=1600&height=900',
                 };
-                await menu.save();
-                console.log('🍽️ Menu updated with itemImages.');
             }
+            await menu.save();
         }
         res.json(menu);
     } catch (error) {
@@ -759,10 +781,25 @@ app.get('/api/menu', authorize(['admin', 'user', 'kitchen']), async (req, res) =
 app.put('/api/menu', authorize(['admin', 'kitchen']), async (req, res) => {
     const { categories, addOns, sugarLevels, itemImages } = req.body;
 
+    // Normalize addOns and sugarLevels
+    const normalizedAddOns = (addOns || []).map(addOn => {
+        if (typeof addOn === 'string') {
+            return { name: addOn, available: true };
+        }
+        return addOn;
+    });
+
+    const normalizedSugarLevels = (sugarLevels || []).map(level => {
+        if (typeof level === 'number') {
+            return { level: level, available: true };
+        }
+        return level;
+    });
+
     try {
         const updatedMenu = await Menu.findOneAndUpdate(
             {},
-            { categories, addOns, sugarLevels, itemImages },
+            { categories, addOns: normalizedAddOns, sugarLevels: normalizedSugarLevels, itemImages },
             { new: true, upsert: true }
         );
 
@@ -770,7 +807,7 @@ app.put('/api/menu', authorize(['admin', 'kitchen']), async (req, res) => {
         res.json({ success: true, message: 'Menu updated successfully.', menu: updatedMenu });
     } catch (error) {
         logger.error('Update Menu Error:', error);
-        res.status(500).json({ success: false, message: 'Server error updating menu.' });
+        res.status: 500.json({ success: false, message: 'Server error updating menu.' });
     }
 });
 
