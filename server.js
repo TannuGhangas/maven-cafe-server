@@ -807,7 +807,7 @@ app.put('/api/menu', authorize(['admin', 'kitchen']), async (req, res) => {
         res.json({ success: true, message: 'Menu updated successfully.', menu: updatedMenu });
     } catch (error) {
         logger.error('Update Menu Error:', error);
-        res.status: 500.json({ success: false, message: 'Server error updating menu.' });
+        res.status(500).json({ success: false, message: 'Server error updating menu.' });
     }
 });
 
