@@ -78,8 +78,8 @@ async function seedDatabase() {
                     { name: 'Maggie', icon: 'FaUtensilSpoon', items: [{ name: 'normal', available: true }], color: '#FF6347', enabled: true },
                     { name: 'Oats', icon: 'FaUtensilSpoon', items: [{ name: 'normal', available: true }], color: '#D2691E', enabled: true },
                 ],
-                addOns: [{ name: "Ginger", enabled: true }, { name: "Cloves", enabled: true }, { name: "Fennel Seeds", enabled: true }, { name: "Cardamom", enabled: true }, { name: "Cinnamon", enabled: true }],
-                sugarLevels: [{ level: 0, enabled: true }, { level: 1, enabled: true }, { level: 2, enabled: true }, { level: 3, enabled: true }],
+                addOns: [{ name: "Ginger", available: true }, { name: "Cloves", available: true }, { name: "Fennel Seeds", available: true }, { name: "Cardamom", available: true }, { name: "Cinnamon", available: true }],
+                sugarLevels: [{ level: 0, available: true }, { level: 1, available: true }, { level: 2, available: true }, { level: 3, available: true }],
                 itemImages: {
                     tea: 'https://tmdone-cdn.s3.me-south-1.amazonaws.com/store-covers/133003776906429295.jpg',
                     coffee: 'https://i.pinimg.com/474x/7a/29/df/7a29dfc903d98c6ba13b687ef1fa1d1a.jpg',

@@ -20,7 +20,7 @@ async function fixMenuData() {
                 const fixedAddOns = menu.addOns.map(addOn => {
                     if (typeof addOn === 'string') {
                         needsUpdate = true;
-                        return { name: addOn, enabled: true };
+                        return { name: addOn, available: true };
                     }
                     return addOn;
                 });
@@ -52,7 +52,7 @@ async function fixMenuData() {
                 const fixedSugarLevels = menu.sugarLevels.map(level => {
                     if (typeof level === 'number') {
                         needsUpdate = true;
-                        return { level: level, enabled: true };
+                        return { level: level, available: true };
                     }
                     return level;
                 });
