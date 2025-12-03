@@ -3,11 +3,11 @@
 const mongoose = require('mongoose');
 
 const OrderItemSchema = new mongoose.Schema({
-    // 1. UPDATED: Expanded the item enum to match frontend configuration logic (including Maggie, Shikanji, Jaljeera)
+    // 1. UPDATED: Item enum for available menu items
     item: {
         type: String,
         required: true,
-        enum: ['coffee', 'tea', 'water', 'shikanji', 'jaljeera', 'maggie', 'soup', 'oats']
+        enum: ['coffee', 'tea', 'water']
     },
     type: { type: String, required: false }, // e.g., 'Black Coffee', 'Masala Tea', 'Hot Milk'
     
