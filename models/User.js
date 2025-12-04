@@ -34,6 +34,16 @@ const UserSchema = new mongoose.Schema({
     enabled: {
         type: Boolean,
         default: true
+    },
+    profileImage: {
+        type: String,
+        required: false,
+        default: null
+    },
+    avatar: {
+        type: String,
+        required: false,
+        default: null
     }
 });
 

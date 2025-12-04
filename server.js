@@ -430,8 +430,24 @@ app.put('/api/orders/:orderId', authorize(['user']), async (req, res) => {
  */
 app.get('/api/orders', authorize(['admin', 'kitchen']), async (req, res) => {
     try {
-        const activeOrders = await Order.find({ status: { $ne: 'Delivered' } }).sort({ timestamp: 1 }); 
-        res.json(activeOrders);
+        const activeOrders = await Order.find({ status: { $ne: 'Delivered' } }).sort({ timestamp: 1 });
+        
+        // Manually fetch user data for each order since userId is stored as Number
+        const ordersWithUserInfo = await Promise.all(activeOrders.map(async (order) => {
+            const orderObj = order.toObject();
+            const user = await User.findOne({ id: order.userId }).select('name profileImage avatar role');
+            
+            return {
+                ...orderObj,
+                userProfile: {
+                    name: user?.name || order.userName,
+                    profileImage: user?.profileImage || user?.avatar || null,
+                    role: user?.role || 'user'
+                }
+            };
+        }));
+        
+        res.json(ordersWithUserInfo);
     } catch (error) {
         logger.error('Fetch All Active Orders Error:', error);
         res.status(500).json({ success: false, message: 'Server error fetching orders.' });
@@ -669,6 +685,43 @@ app.put('/api/user/:userId', authorize(['user', 'kitchen', 'admin']), async (req
             return res.status(409).json({ success: false, message: 'Email already in use by another account (DB Index Error).' });
         }
         res.status(500).json({ success: false, message: 'Server error updating profile.' });
+    }
+});
+
+/**
+ * Endpoint 21: PUT /api/user/:userId/profile-image (Update Profile Image)
+ */
+app.put('/api/user/:userId/profile-image', authorize(['user', 'kitchen', 'admin']), async (req, res) => {
+    const userId = parseInt(req.params.userId);
+    const { profileImage, avatar } = req.body;
+
+    if (!profileImage && !avatar) {
+        return res.status(400).json({ success: false, message: 'Profile image or avatar URL is required.' });
+    }
+
+    const updateData = {};
+    if (profileImage) updateData.profileImage = profileImage;
+    if (avatar) updateData.avatar = avatar;
+
+    try {
+        const updatedUser = await User.findOneAndUpdate(
+            { id: userId },
+            updateData,
+            { new: true, runValidators: true }
+        ).select('-password');
+
+        if (!updatedUser) return res.status(404).json({ success: false, message: 'User not found.' });
+
+        logger.info(`User ${userId} updated profile image.`);
+        res.json({ 
+            success: true, 
+            message: 'Profile image updated successfully.', 
+            user: updatedUser.toObject(),
+            profileImage: updatedUser.profileImage || updatedUser.avatar
+        });
+    } catch (error) {
+        logger.error('Update Profile Image Error:', error);
+        res.status(500).json({ success: false, message: 'Server error updating profile image.' });
     }
 });
 
