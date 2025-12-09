@@ -41,18 +41,21 @@ const sendPushNotification = async (token, title, body, data = {}) => {
             },
             token,
             webpush: {
-                notification: {
-                    title,
-                    body,
-                    icon: '/icons/icon-192-v2.png',
-                    badge: '/icons/icon-192-v2.png',
-                    vibrate: [200, 100, 200],
-                    requireInteraction: true,
-                },
-                fcmOptions: {
-                    link: '/',
-                },
-            },
+    notification: {
+        title,
+        body,
+        icon: '/icons/icon-192-v2.png',
+        badge: '/icons/icon-192-v2.png',
+        vibrate: [200, 100, 200],
+        requireInteraction: true,
+        tag: Date.now().toString(),     // 👈 Important
+        renotify: true                  // 👈 Important
+    },
+    fcmOptions: {
+        link: '/',
+    },
+}
+
         };
 
         const response = await admin.messaging().send(message);
@@ -84,15 +87,18 @@ const sendMulticastNotification = async (tokens, title, body, data = {}) => {
             },
             tokens: Array.from(tokens),
             webpush: {
-                notification: {
-                    title,
-                    body,
-                    icon: '/icons/icon-192-v2.png',
-                    badge: '/icons/icon-192-v2.png',
-                    vibrate: [200, 100, 200],
-                    requireInteraction: true,
-                },
-            },
+    notification: {
+        title,
+        body,
+        icon: '/icons/icon-192-v2.png',
+        badge: '/icons/icon-192-v2.png',
+        vibrate: [200, 100, 200],
+        requireInteraction: true,
+        tag: Date.now().toString(),   // 👈 Important
+        renotify: true                // 👈 Important
+    },
+}
+
         };
 
         const response = await admin.messaging().sendEachForMulticast(message);
