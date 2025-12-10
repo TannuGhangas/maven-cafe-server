@@ -172,14 +172,21 @@ router.put('/orders/:orderId', authorize(['user']), async (req, res) => {
 });
 
 /**
- * GET /orders (Kitchen/Admin: View All Active Orders)
+ * GET /orders (Kitchen/Admin: View Orders)
+ * Kitchen users see active orders only, Admin users see all orders including completed ones
  */
 router.get('/orders', authorize(['admin', 'kitchen']), async (req, res) => {
     try {
-        const activeOrders = await Order.find({ status: { $ne: 'Delivered' } }).sort({ timestamp: 1 });
+        const userRole = req.currentUser.role;
+        const includeCompleted = req.query.includeCompleted === 'true' || userRole === 'admin';
+        
+        // For kitchen users: show only active orders
+        // For admin users: show all orders (including completed) for historical data
+        const query = includeCompleted ? {} : { status: { $ne: 'Delivered' } };
+        const orders = await Order.find(query).sort({ timestamp: -1 }); // Most recent first
         
         // Manually fetch user data for each order since userId is stored as Number
-        const ordersWithUserInfo = await Promise.all(activeOrders.map(async (order) => {
+        const ordersWithUserInfo = await Promise.all(orders.map(async (order) => {
             const orderObj = order.toObject();
             const user = await User.findOne({ id: order.userId }).select('name profileImage avatar role');
             
@@ -193,9 +200,10 @@ router.get('/orders', authorize(['admin', 'kitchen']), async (req, res) => {
             };
         }));
         
+        logger.info(`Fetched ${orders.length} orders for ${userRole} user (includeCompleted: ${includeCompleted})`);
         res.json(ordersWithUserInfo);
     } catch (error) {
-        logger.error('Fetch All Active Orders Error:', error);
+        logger.error('Fetch Orders Error:', error);
         return res.status(500).json({ success: false, message: 'Server error fetching orders.' });
     }
 });

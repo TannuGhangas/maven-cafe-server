@@ -1,16 +1,22 @@
+// -----------------------------------------------------
 // backend/notify.js
+// -----------------------------------------------------
+
 const admin = require("./firebaseAdmin");
+const logger = require("./utils/logger");
 
 async function sendPushNotification(token, title, body, data = {}) {
+  if (!admin) {
+    logger.error("❌ Firebase Admin not initialized. Cannot send notifications.");
+    return { error: "Firebase Admin not initialized" };
+  }
+
   const message = {
     token,
-    notification: {
-      title,
-      body
-    },
-    data, // optional key/value strings
+    notification: { title, body },
+    data,
 
-    // --- ANDROID HIGH PRIORITY ---
+    // ANDROID HIGH PRIORITY
     android: {
       priority: "high",
       notification: {
@@ -20,19 +26,13 @@ async function sendPushNotification(token, title, body, data = {}) {
       }
     },
 
-    // --- iOS HIGH PRIORITY ---
+    // iOS HIGH PRIORITY
     apns: {
-      headers: {
-        "apns-priority": "10"
-      },
-      payload: {
-        aps: {
-          sound: "default"
-        }
-      }
+      headers: { "apns-priority": "10" },
+      payload: { aps: { sound: "default" } }
     },
 
-    // --- IMPORTANT FIX FOR CHROME ---
+    // WEB PUSH (PWA)
     webpush: {
       notification: {
         title,
@@ -41,18 +41,33 @@ async function sendPushNotification(token, title, body, data = {}) {
         badge: "/icons/icon-192-v2.png",
         vibrate: [200, 100, 200],
         requireInteraction: true,
-
-        // 💥 KEY FIX — Chrome shows notification every time
-        tag: Date.now().toString(),  // unique each time
-        renotify: true               // force display even if same tag
+        tag: Date.now().toString(),
+        renotify: true
       },
       fcmOptions: {
-        link: "/" // opens PWA
+        link: "/"  // Open your PWA on notification click
       }
     }
   };
 
-  return admin.messaging().send(message);
+  try {
+    const response = await admin.messaging().send(message);
+
+    logger.info("📨 Push sent successfully", {
+      token,
+      title,
+      response
+    });
+
+    return response;
+  } catch (error) {
+    logger.error("❌ Error sending push notification", {
+      token,
+      error: error?.message || error
+    });
+
+    throw error;
+  }
 }
 
 module.exports = sendPushNotification;

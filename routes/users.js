@@ -243,4 +243,47 @@ router.put('/user/:userId/profile-image', authorize(['user', 'kitchen', 'admin']
     }
 });
 
+/**
+ * POST /profile-image-update (Broadcast profile image update to kitchen)
+ * This endpoint is called when a user updates their profile image to notify all kitchen clients
+ */
+router.post('/profile-image-update', authorize(['user', 'admin']), async (req, res) => {
+    const { userId, userName, profileImage, action } = req.body;
+    
+    if (!userId || !userName) {
+        return res.status(400).json({ success: false, message: 'User ID and name are required.' });
+    }
+    
+    try {
+        // Broadcast to all connected kitchen clients
+        if (io) {
+            const updateData = {
+                userId,
+                userName,
+                profileImage: profileImage || null,
+                action: action || 'updated',
+                timestamp: Date.now()
+            };
+            
+            io.emit('profile-image-updated', updateData);
+            logger.info(`Profile image update broadcasted for user ${userName} (${userId})`);
+        } else {
+            logger.warn('Socket.IO instance not available for profile image update broadcast');
+        }
+        
+        res.json({
+            success: true,
+            message: 'Profile image update broadcasted successfully.',
+            updateData: {
+                userId,
+                userName,
+                action: action || 'updated'
+            }
+        });
+    } catch (error) {
+        logger.error('Profile Image Update Broadcast Error:', error);
+        return res.status(500).json({ success: false, message: 'Server error broadcasting profile image update.' });
+    }
+});
+
 module.exports = router;
