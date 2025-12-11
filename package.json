@@ -8,7 +8,8 @@
     "start": "node server.js",
     "update-menu": "node update-menu-addons.js",
     "verify-firebase": "node railway-firebase-verification.js",
-    "test-firebase": "node test-firebase-setup.js"
+    "test-firebase": "node test-firebase-setup.js",
+    "test-railway-env": "node test-railway-env.js"
   },
   "keywords": [],
   "author": "",

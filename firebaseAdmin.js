@@ -1,5 +1,5 @@
 // -----------------------------------------------------
-// backend/firebaseAdmin.js
+// backend/firebaseAdmin.js - Railway Optimized
 // -----------------------------------------------------
 
 const admin = require("firebase-admin");
@@ -8,12 +8,55 @@ const logger = require("./utils/logger");
 let serviceAccount;
 let firebaseInitialized = false;
 
+// Helper function to safely parse JSON from environment variable
+function parseServiceAccountJSON(envValue) {
+  if (!envValue) return null;
+  
+  try {
+    // Handle base64 encoded JSON (Railway sometimes does this)
+    if (envValue.trim().startsWith('{') && envValue.trim().endsWith('}')) {
+      // Direct JSON
+      return JSON.parse(envValue);
+    } else {
+      // Try base64 decode first
+      try {
+        const decoded = Buffer.from(envValue, 'base64').toString('utf8');
+        return JSON.parse(decoded);
+      } catch (base64Err) {
+        // If base64 fails, try direct JSON parsing
+        return JSON.parse(envValue);
+      }
+    }
+  } catch (parseErr) {
+    throw new Error(`Failed to parse service account JSON: ${parseErr.message}`);
+  }
+}
+
+// Helper function to clean private key
+function cleanPrivateKey(privateKey) {
+  if (!privateKey) return privateKey;
+  
+  // Handle escaped newlines that are common in environment variables
+  return privateKey
+    .replace(/\\n/g, '\n')        // Convert escaped newlines to real newlines
+    .replace(/\\"/g, '"')        // Convert escaped quotes
+    .replace(/\\\\/g, '\\')      // Convert escaped backslashes
+    .trim();
+}
+
 // Try to load Firebase configuration - Production First Approach
 try {
   // PRIORITY 1: Environment variable (Production Recommended)
   if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     try {
-      serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+      logger.info("🔍 Attempting to load Firebase service account from environment variable...");
+      
+      serviceAccount = parseServiceAccountJSON(process.env.FIREBASE_SERVICE_ACCOUNT);
+      
+      // Clean the private key to handle escaped newlines
+      if (serviceAccount.private_key) {
+        serviceAccount.private_key = cleanPrivateKey(serviceAccount.private_key);
+      }
       
       // Validate required fields
       if (!serviceAccount.project_id || !serviceAccount.client_email || !serviceAccount.private_key) {
@@ -29,7 +72,11 @@ try {
       logger.info(`📊 Project: ${serviceAccount.project_id} | Service Account: ${serviceAccount.client_email}`);
     } catch (parseErr) {
       logger.error("❌ Failed to parse FIREBASE_SERVICE_ACCOUNT environment variable:", parseErr.message);
-      logger.error("💡 Check that the FIREBASE_SERVICE_ACCOUNT contains valid JSON");
+      logger.error("💡 Common solutions:");
+      logger.error("   - Ensure the JSON is properly formatted");
+      logger.error("   - Check that newlines in private_key are preserved");
+      logger.error("   - Verify the entire JSON string is in one line or properly escaped");
+      logger.error("   - Try base64 encoding the JSON if direct JSON fails");
     }
   }
 
@@ -72,6 +119,13 @@ try {
     logger.error("❌ Firebase Admin initialization failed:", errorMsg);
     logger.error("💡 For production: Use FIREBASE_SERVICE_ACCOUNT environment variable with your service account JSON");
     logger.error("💡 For development: Use FIREBASE_SERVICE_ACCOUNT_FILE path to your serviceAccountKey.json");
+    logger.error("🔧 Railway Setup:");
+    logger.error("   1. Go to Railway Dashboard");
+    logger.error("   2. Select your project");
+    logger.error("   3. Go to Variables tab");
+    logger.error("   4. Add: FIREBASE_SERVICE_ACCOUNT");
+    logger.error("   5. Value: Your complete service account JSON");
+    logger.error("   6. Redeploy your application");
     throw new Error(errorMsg);
   }
 
