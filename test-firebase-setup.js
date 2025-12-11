@@ -1,6 +1,9 @@
 // Test Firebase Setup Script
 // Run this to verify your Firebase configuration
 
+// Load environment variables
+require('dotenv').config();
+
 const admin = require('./firebaseAdmin');
 const logger = require('./utils/logger');
 
