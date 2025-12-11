@@ -20,7 +20,7 @@ async function testProfileImageSync() {
         console.log('🧪 Starting Profile Image Synchronization Test...');
         
         // Connect to MongoDB
-        await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/maven-cafe');
+        await mongoose.connect(process.env.MONGODB_URI || 'mongodb://10.119.41.34:27017/maven-cafe');
         console.log('✅ Connected to MongoDB');
         
         // Create test users if they don't exist
