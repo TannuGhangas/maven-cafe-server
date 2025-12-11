@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "update-menu": "node update-menu-addons.js"
+    "update-menu": "node update-menu-addons.js",
+    "verify-firebase": "node railway-firebase-verification.js",
+    "test-firebase": "node test-firebase-setup.js"
   },
   "keywords": [],
   "author": "",
