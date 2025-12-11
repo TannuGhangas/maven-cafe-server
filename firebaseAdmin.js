@@ -5,6 +5,9 @@
 const admin = require("firebase-admin");
 const logger = require("./utils/logger");
 
+console.log("FIREBASE_SERVICE_ACCOUNT preview:", process.env.FIREBASE_SERVICE_ACCOUNT?.slice(0, 50));
+
+
 let serviceAccount;
 let firebaseInitialized = false;
 
